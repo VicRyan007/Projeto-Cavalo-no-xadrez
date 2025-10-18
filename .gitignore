@@ -1,0 +1,107 @@
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# PyBuilder
+target/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# pyenv
+python-version
+
+# mypy
+.mypy_cache/
+dmypy.json
+dmypy.sock
+
+# Pyre type checker
+.pyre/
+
+# IDE / editor settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Output images and generated files
+output/
+
+# Matplotlib cache
+.matplotlib/
+
+# compiled Python files
+*.pyc
+
+# pytest cache
+.pytest_cache/
+
+# Temporary files
+tmp/
+temp/
+~$*
+
+# Secrets / credentials (if any appear accidentally)
+*.env
+.env.local
+.env.*.local
