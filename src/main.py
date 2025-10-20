@@ -113,6 +113,8 @@ def show_side_by_side(grid, start, goal):
         # draw one frame to the figure canvas
         fig.canvas.draw()
 
+        plt.pause(0.05)
+
     # adicionar legendas específicas por subplot (contextuais)
     # Handles separados
     search_handles = [Line2D([0],[0], marker='s', color='w', markerfacecolor='cyan', markersize=10, label='Open'),

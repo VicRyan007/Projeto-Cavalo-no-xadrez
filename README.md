@@ -1,3 +1,14 @@
+PRECISA APENAS INSTALAR O MATPLOTLIB E O NUMPY:
+
+abre o terminal e:
+```
+python -m pip install matplotlib numpy
+```
+No terminal dentro da pasta dos dois arquivos:
+ ```
+	python teste cavalo.py
+ ```
+
 Instalação, configuração e execução (mínimo)
 
 Pré-requisito: Python 3.8+ instalado.
