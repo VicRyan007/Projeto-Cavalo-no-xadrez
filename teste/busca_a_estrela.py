@@ -1,5 +1,4 @@
 import heapq
-import math
 from collections import deque
 
 # --- 1. CLASSE 'CASA' (Seu "Estado" ou "Vértice") ---
@@ -169,3 +168,90 @@ class BuscaAEstrela:
 
         # <<< MUDANÇA 4: Retorna os novos dados (em caso de falha) >>>
         return None, 0, closed_list, custo_g_visitado
+
+class BuscaAEstrelaAnimada(BuscaAEstrela):
+    
+    def busca_passo_a_passo(self, casa_origem, tipo_heuristica='h1'):
+        """
+        Versão 'geradora' (generator) do A* que 'yields' (retorna)
+        o estado da busca a cada iteração, para permitir a animação.
+        """
+        self.tabuleiro.limpar_tabuleiro()
+
+        if tipo_heuristica == 'h1':
+            calcular_h = self.h1_fraca
+        else:
+            calcular_h = self.h2_forte
+
+        # Lista Fechada (Nós já explorados)
+        closed_list = set()
+        
+        # Mapa de custo G
+        custo_g_visitado = {casa_origem: 0}
+        
+        g_inicial = 0 
+        h_inicial = calcular_h(casa_origem)
+        f_inicial = g_inicial + h_inicial
+        
+        # Fila de Prioridade (Esta é a nossa Lista Aberta)
+        # (F, G, Casa Atual, Caminho)
+        fila_prioridade = [(f_inicial, g_inicial, casa_origem, [casa_origem])]
+        
+        # Dicionário para rastrear o que está na open list (para fácil visualização)
+        # (Casa -> F_Score)
+        open_list_dict = {casa_origem: f_inicial}
+
+        # <<< MUDANÇA AQUI: Renderiza o primeiro frame com o caminho inicial >>>
+        yield set(open_list_dict.keys()), set(closed_list), [casa_origem], False
+
+        while fila_prioridade:
+            f_score, g_atual, casa_atual, caminho = heapq.heappop(fila_prioridade)
+            
+            # Remove da visualização da Lista Aberta
+            if casa_atual in open_list_dict:
+                del open_list_dict[casa_atual]
+
+            # Se já achamos um caminho melhor, ignora
+            if g_atual > custo_g_visitado.get(casa_atual, float('inf')):
+                continue
+
+            # Adiciona à Lista Fechada
+            closed_list.add(casa_atual)
+
+            # --- YIELD DO ESTADO ATUAL ---
+            # Retorna o estado atual para o animador
+            # open_list_nodes = set(open_list_dict.keys())
+            # closed_list_nodes = set(closed_list)
+            # yield open_list_nodes, closed_list_nodes, None
+            yield set(open_list_dict.keys()), set(closed_list), caminho, False
+
+            # --- Objetivo Encontrado ---
+            if casa_atual == self.objetivo:
+                yield set(open_list_dict.keys()), set(closed_list), caminho, True # Frame final
+                return # Termina o gerador
+
+            # --- Expansão (igual ao original) ---
+            for vizinho in self.tabuleiro.get_vizinhos(casa_atual):
+                # Se o vizinho já está na lista fechada, ignora
+                if vizinho in closed_list:
+                    continue
+                
+                novo_custo_g = g_atual + vizinho.custo_terreno
+                
+                # Se este não for um caminho melhor, ignora
+                if novo_custo_g >= custo_g_visitado.get(vizinho, float('inf')):
+                    continue
+
+                # Este é o melhor caminho até agora para este vizinho
+                custo_g_visitado[vizinho] = novo_custo_g
+                custo_h = calcular_h(vizinho)
+                f_score_vizinho = novo_custo_g + custo_h
+                novo_caminho = caminho + [vizinho]
+                
+                heapq.heappush(fila_prioridade,
+                    (f_score_vizinho, novo_custo_g, vizinho, novo_caminho))
+                
+                # Adiciona à visualização da Lista Aberta
+                open_list_dict[vizinho] = f_score_vizinho
+
+        yield set(open_list_dict.keys()), set(closed_list), None, True # Falha

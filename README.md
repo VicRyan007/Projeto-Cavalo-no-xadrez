@@ -6,7 +6,15 @@ python -m pip install matplotlib numpy
 ```
 No terminal dentro da pasta dos dois arquivos:
  ```
-	python teste cavalo.py
+	python teste_cavalo.py
+ ```
+
+ ```
+	python animador_cavalo.py
+ ```
+
+ ```
+	python animador_comparativo.py
  ```
 
 Instalação, configuração e execução (mínimo)
