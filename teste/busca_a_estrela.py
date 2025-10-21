@@ -1,5 +1,33 @@
 import heapq
 from collections import deque
+import random
+
+# Valores de terreno (custo para entrar na casa)
+TERRAIN_VALUES = {
+    'estrada': 0.5,
+    'terra': 1.0,
+    'lama': 5.0,
+    'barreira': float('inf')
+}
+
+
+def gerar_matriz_aleatoria(largura=8, altura=8, probs=None):
+    """Gera uma matriz altura x largura com tipos de terreno aleatórios.
+    probs: dicionário com probabilidades para cada tipo (soma = 1.0) ou None para padrão.
+    Retorna uma lista de listas (linhas) com valores de custo de terreno.
+    """
+    if probs is None:
+        probs = {'estrada': 0.15, 'terra': 0.7, 'lama': 0.12, 'barreira': 0.03}
+    tipos = list(probs.keys())
+    pesos = [probs[t] for t in tipos]
+    matriz = []
+    for y in range(altura):
+        linha = []
+        for x in range(largura):
+            tipo = random.choices(tipos, weights=pesos, k=1)[0]
+            linha.append(TERRAIN_VALUES[tipo])
+        matriz.append(linha)
+    return matriz
 
 # --- 1. CLASSE 'CASA' (Seu "Estado" ou "Vértice") ---
 class Casa:

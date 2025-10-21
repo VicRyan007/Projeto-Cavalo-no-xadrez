@@ -2,7 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from busca_a_estrela import Tabuleiro, BuscaAEstrela
+from busca_a_estrela import Tabuleiro, BuscaAEstrela, gerar_matriz_aleatoria, TERRAIN_VALUES
 
 # --- FUNÇÃO DE PLOTAGEM (Onde a mágica acontece) ---
 
@@ -79,29 +79,29 @@ def plotar_resultados(tabuleiro, caminho, closed_list, g_map, nome_heuristica):
     plt.show()
 
 
-# --- DEFINIÇÃO DO TABULEIRO 8x8 ---
-inf = float('inf')
-
-# <<< USE ESTE NOVO MAPA DE CUSTOS >>>
-CUSTOS_TABULEIRO_EXEMPLO = [
-    [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
-    [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
-    [1.0, 1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 1.0], # "Estrada" fácil...
-    [1.0, 1.0, 0.5, 5.0, 5.0, 5.0, 0.5, 1.0], # ...que vira "Lama"
-    [1.0, 1.0, 0.5, 5.0, 5.0, 5.0, 0.5, 1.0], # "Lama" no meio
-    [1.0, 1.0, 0.5, 5.0, 5.0, 5.0, 0.5, 1.0], 
-    [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
-    [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-]
-
 # --- EXECUÇÃO DA BUSCA E VISUALIZAÇÃO ---
 
-# 1. Configuração inicial
-tabuleiro_teste = Tabuleiro(CUSTOS_TABULEIRO_EXEMPLO)
+# 1. Configuração inicial: gerar mapa aleatório a cada execução
+matriz_aleatoria = gerar_matriz_aleatoria(8,8)
+tabuleiro_teste = Tabuleiro(matriz_aleatoria)
 
 # <<< MUDE A ORIGEM E O DESTINO >>>
-origem = tabuleiro_teste.get_casa(2, 2)   # Começa na "estrada"
-destino = tabuleiro_teste.get_casa(6, 4)  # Objetivo do outro lado da lama
+#índices válidos vão de 0 a 7 em um tabuleiro 8x8
+origem = tabuleiro_teste.get_casa(0, 0)   # Posições fixas conforme solicitado
+destino = tabuleiro_teste.get_casa(7, 7)
+
+# Segurança: se por algum motivo get_casa retornar None (coordenada inválida),
+# escolher posições padrão válidas
+if origem is None:
+    origem = tabuleiro_teste.get_casa(0, 0)
+if destino is None:
+    destino = tabuleiro_teste.get_casa(7, 7)
+
+# Garantir que origem e destino não sejam barreiras (barreira -> tornar em 'terra')
+if origem.custo_terreno == float('inf'):
+    origem.custo_terreno = TERRAIN_VALUES['terra']
+if destino.custo_terreno == float('inf'):
+    destino.custo_terreno = TERRAIN_VALUES['terra']
 
 buscaaestrela_cavalo = BuscaAEstrela(tabuleiro_teste, destino)
 
