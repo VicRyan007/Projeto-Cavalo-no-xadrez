@@ -2,7 +2,6 @@ import heapq
 from collections import deque
 import random
 
-# Valores de terreno (custo para entrar na casa)
 TERRAIN_VALUES = {
     'estrada': 0.5,
     'terra': 1.0,
@@ -10,12 +9,7 @@ TERRAIN_VALUES = {
     'barreira': float('inf')
 }
 
-
 def gerar_matriz_aleatoria(largura=8, altura=8, probs=None):
-    """Gera uma matriz altura x largura com tipos de terreno aleatórios.
-    probs: dicionário com probabilidades para cada tipo (soma = 1.0) ou None para padrão.
-    Retorna uma lista de listas (linhas) com valores de custo de terreno.
-    """
     if probs is None:
         probs = {'estrada': 0.15, 'terra': 0.7, 'lama': 0.12, 'barreira': 0.03}
     tipos = list(probs.keys())
@@ -29,7 +23,6 @@ def gerar_matriz_aleatoria(largura=8, altura=8, probs=None):
         matriz.append(linha)
     return matriz
 
-# --- 1. CLASSE 'CASA' (Seu "Estado" ou "Vértice") ---
 class Casa:
     def __init__(self, x, y, custo_terreno):
         self.x = x
@@ -46,8 +39,6 @@ class Casa:
     def __lt__(self, other):
         return (self.x, self.y) < (other.x, other.y)
 
-
-# --- 2. CLASSE 'TABULEIRO' (Seu "Grafo Implícito") ---
 class Tabuleiro:
     def __init__(self, matriz_custos):
         self.altura = len(matriz_custos)
@@ -90,11 +81,8 @@ class Tabuleiro:
             for x in range(self.largura):
                 self.grid[y][x].visitado = False
 
-
-# --- 3. CLASSE 'BuscaAEstrela' (Lógica Principal) ---
 class BuscaAEstrela:
     
-    # --- Cria tabela de saltos mínimos do cavalo (BFS) ---
     def _criar_tabela_saltos_bfs(self, largura, altura):
         distancias = [[-1 for _ in range(largura)] for _ in range(altura)]
         fila = deque([(0, 0, 0)])
@@ -119,34 +107,21 @@ class BuscaAEstrela:
         self.tabuleiro = tabuleiro
         self.objetivo = objetivo
         self.encontrado = False
-        # Pré-calcula a tabela de saltos do cavalo (para H2)
         self.tabela_saltos_cavalo = self._criar_tabela_saltos_bfs(
             tabuleiro.largura, tabuleiro.altura
         )
 
-    # --- Heurística H1 (Fraca, Genérica, ADMISSÍVEL) ---
+    # --- Heurística H1 Dijkstra ---
     def h1_fraca(self, casa_atual):
-        """
-        H1: Heurística Fraca (Busca de Custo Uniforme / Dijkstra)
-        H = 0. Esta é a heurística "ignorante" mais fraca possível.
-        É admissível (0 <= Custo Real).
-        """
-        return 0.0 # Retorna sempre 0
+        return 0.0 
 
-
-    # --- Heurística H2 (Forte, Específica, ADMISSÍVEL) ---
+    # --- Heurística H2 baseado no movimento do cavalo ---
     def h2_forte(self, casa_atual):
-        """
-        H2: Heurística Forte (Baseada nos saltos reais do Cavalo)
-        Usa a tabela pré-calculada pelo BFS.
-        """
         dx = abs(casa_atual.x - self.objetivo.x)
         dy = abs(casa_atual.y - self.objetivo.y)
         
-        # 1. Pega o N° Mínimo de Saltos da tabela (BFS)
         num_min_saltos = self.tabela_saltos_cavalo[dy][dx]
 
-        # 2. Multiplica pelo CUSTO MÍNIMO para garantir admissibilidade
         return num_min_saltos * self.tabuleiro.min_custo_terreno
 
 
@@ -155,8 +130,7 @@ class BuscaAEstrela:
         self.tabuleiro.limpar_tabuleiro()
         self.encontrado = False
         
-        # <<< MUDANÇA 1: Mudar de contador para um CONJUNTO >>>
-        closed_list = set() # Substitui 'nos_expandidos = 0'
+        closed_list = set() 
 
         if tipo_heuristica == 'h1':
             calcular_h = self.h1_fraca
@@ -168,17 +142,15 @@ class BuscaAEstrela:
         f_inicial = g_inicial + h_inicial
 
         fila_prioridade = [(f_inicial, g_inicial, casa_origem, [casa_origem])]
-        custo_g_visitado = {casa_origem: 0} # Este mapa é crucial para o Req A.C
+        custo_g_visitado = {casa_origem: 0} 
 
         while fila_prioridade:
             f_score, g_atual, casa_atual, caminho = heapq.heappop(fila_prioridade)
             
-            # <<< MUDANÇA 2: Adiciona a casa à lista fechada >>>
             closed_list.add(casa_atual)
 
             if casa_atual == self.objetivo:
                 self.encontrado = True
-                # <<< MUDANÇA 3: Retorna os novos dados >>>
                 return caminho, g_atual, closed_list, custo_g_visitado
 
             if g_atual > custo_g_visitado.get(casa_atual, float('inf')):
@@ -194,16 +166,12 @@ class BuscaAEstrela:
                     heapq.heappush(fila_prioridade,
                         (f_score_vizinho, novo_custo_g, vizinho, novo_caminho))
 
-        # <<< MUDANÇA 4: Retorna os novos dados (em caso de falha) >>>
         return None, 0, closed_list, custo_g_visitado
 
+# --- ANIMAÇÃO ---
 class BuscaAEstrelaAnimada(BuscaAEstrela):
     
     def busca_passo_a_passo(self, casa_origem, tipo_heuristica='h1'):
-        """
-        Versão 'geradora' (generator) do A* que 'yields' (retorna)
-        o estado da busca a cada iteração, para permitir a animação.
-        """
         self.tabuleiro.limpar_tabuleiro()
 
         if tipo_heuristica == 'h1':
@@ -211,66 +179,44 @@ class BuscaAEstrelaAnimada(BuscaAEstrela):
         else:
             calcular_h = self.h2_forte
 
-        # Lista Fechada (Nós já explorados)
         closed_list = set()
-        
-        # Mapa de custo G
         custo_g_visitado = {casa_origem: 0}
         
         g_inicial = 0 
         h_inicial = calcular_h(casa_origem)
         f_inicial = g_inicial + h_inicial
         
-        # Fila de Prioridade (Esta é a nossa Lista Aberta)
-        # (F, G, Casa Atual, Caminho)
         fila_prioridade = [(f_inicial, g_inicial, casa_origem, [casa_origem])]
-        
-        # Dicionário para rastrear o que está na open list (para fácil visualização)
-        # (Casa -> F_Score)
         open_list_dict = {casa_origem: f_inicial}
 
-        # <<< MUDANÇA AQUI: Renderiza o primeiro frame com o caminho inicial >>>
         yield set(open_list_dict.keys()), set(closed_list), [casa_origem], False
 
         while fila_prioridade:
             f_score, g_atual, casa_atual, caminho = heapq.heappop(fila_prioridade)
             
-            # Remove da visualização da Lista Aberta
             if casa_atual in open_list_dict:
                 del open_list_dict[casa_atual]
 
-            # Se já achamos um caminho melhor, ignora
             if g_atual > custo_g_visitado.get(casa_atual, float('inf')):
                 continue
 
-            # Adiciona à Lista Fechada
             closed_list.add(casa_atual)
 
-            # --- YIELD DO ESTADO ATUAL ---
-            # Retorna o estado atual para o animador
-            # open_list_nodes = set(open_list_dict.keys())
-            # closed_list_nodes = set(closed_list)
-            # yield open_list_nodes, closed_list_nodes, None
             yield set(open_list_dict.keys()), set(closed_list), caminho, False
 
-            # --- Objetivo Encontrado ---
             if casa_atual == self.objetivo:
-                yield set(open_list_dict.keys()), set(closed_list), caminho, True # Frame final
-                return # Termina o gerador
+                yield set(open_list_dict.keys()), set(closed_list), caminho, True 
+                return 
 
-            # --- Expansão (igual ao original) ---
             for vizinho in self.tabuleiro.get_vizinhos(casa_atual):
-                # Se o vizinho já está na lista fechada, ignora
                 if vizinho in closed_list:
                     continue
                 
                 novo_custo_g = g_atual + vizinho.custo_terreno
                 
-                # Se este não for um caminho melhor, ignora
                 if novo_custo_g >= custo_g_visitado.get(vizinho, float('inf')):
                     continue
 
-                # Este é o melhor caminho até agora para este vizinho
                 custo_g_visitado[vizinho] = novo_custo_g
                 custo_h = calcular_h(vizinho)
                 f_score_vizinho = novo_custo_g + custo_h
@@ -279,7 +225,6 @@ class BuscaAEstrelaAnimada(BuscaAEstrela):
                 heapq.heappush(fila_prioridade,
                     (f_score_vizinho, novo_custo_g, vizinho, novo_caminho))
                 
-                # Adiciona à visualização da Lista Aberta
                 open_list_dict[vizinho] = f_score_vizinho
 
-        yield set(open_list_dict.keys()), set(closed_list), None, True # Falha
+        yield set(open_list_dict.keys()), set(closed_list), None, True

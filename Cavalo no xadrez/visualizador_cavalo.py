@@ -1,25 +1,21 @@
-# Salve como: visualizador_cavalo.py
-
 import matplotlib.pyplot as plt
 import numpy as np
-from busca_a_estrela import Tabuleiro, BuscaAEstrela, gerar_matriz_aleatoria, TERRAIN_VALUES
+import matplotlib.patches as mpatches 
 
-# --- FUNÇÃO DE PLOTAGEM (Onde a mágica acontece) ---
+from busca_a_estrela import (
+    Tabuleiro, 
+    BuscaAEstrela, 
+    gerar_matriz_aleatoria, 
+    TERRAIN_VALUES
+)
+from matplotlib.colors import ListedColormap, BoundaryNorm 
 
 def plotar_resultados(tabuleiro, caminho, closed_list, g_map, nome_heuristica):
-    """
-    Gera a visualização gráfica dos resultados usando Matplotlib.
-    """
     
-    # --- 1. Preparar os dados para os mapas ---
     largura = tabuleiro.largura
     altura = tabuleiro.altura
     
-    # Mapa de Terreno (Req A.A)
     mapa_terreno = np.zeros((altura, largura))
-    
-    # Mapa de Custo G / Área de Busca (Req A.C / B.B)
-    # Começa com 'NaN' (Not a Number) para casas não visitadas
     mapa_g_cost = np.full((altura, largura), np.nan)
     
     for y in range(altura):
@@ -29,84 +25,79 @@ def plotar_resultados(tabuleiro, caminho, closed_list, g_map, nome_heuristica):
             if casa in g_map:
                 mapa_g_cost[y, x] = g_map[casa]
 
-    # Lida com barreiras (inf) para melhor visualização
-    mapa_terreno[mapa_terreno == np.inf] = -1 # Marcar barreiras com -1
+    mapa_terreno[mapa_terreno == np.inf] = -1 
     
-    
-    # --- 2. Criar os Gráficos (Figura com 2 subplots) ---
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 9))
     fig.suptitle(f'Resultados da Busca A* com {nome_heuristica}', fontsize=16)
 
-    # --- SUBPLOT 1: Mapa de Terreno e Caminho Ótimo (Req A.A, A.B) ---
-    cmap_terreno = plt.cm.get_cmap('terrain_r')
-    cmap_terreno.set_under('black') # Barreiras (-1) ficarão pretas
-    
-    im1 = ax1.imshow(mapa_terreno, cmap=cmap_terreno, vmin=0)
-    ax1.set_title(f"Mapa de Terreno e Caminho Ótimo")
-    fig.colorbar(im1, ax=ax1, label="Custo do Terreno")
+    cores_terreno = ['#000000', '#6BBE6B', '#E3C18E', '#8B4513']
+    limites_terreno = [-1.5, -0.5, 0.75, 1.5, 5.5]
+    cmap_terreno = ListedColormap(cores_terreno)
+    norm_terreno = BoundaryNorm(limites_terreno, cmap_terreno.N)
 
-    # --- SUBPLOT 2: Área de Busca e Mapa de Custo G (Req A.C, B.B) ---
+    im1 = ax1.imshow(mapa_terreno, cmap=cmap_terreno, norm=norm_terreno)
+    ax1.set_title(f"Mapa de Terreno e Caminho Ótimo")
+
+
     cmap_busca = plt.cm.get_cmap('viridis')
-    cmap_busca.set_bad('lightgray') # Casas não visitadas (NaN) ficarão cinza
+    cmap_busca.set_bad('lightgray')
     
     im2 = ax2.imshow(mapa_g_cost, cmap=cmap_busca)
     ax2.set_title(f"Área de Busca (Nós Expandidos: {len(closed_list)})")
     fig.colorbar(im2, ax=ax2, label="Custo G (Custo para Chegar)")
 
-    # --- 3. Desenhar o Caminho Ótimo em ambos os gráficos ---
     if caminho:
         x_coords = [casa.x for casa in caminho]
         y_coords = [casa.y for casa in caminho]
         
-        # Caminho no gráfico 1
         ax1.plot(x_coords, y_coords, marker='o', color='red', markersize=5,
                  linewidth=2, label='Caminho Ótimo')
         ax1.legend(loc='upper left')
         
-        # Caminho no gráfico 2
         ax2.plot(x_coords, y_coords, marker='x', color='red', markersize=5,
                  linewidth=2, label='Caminho Ótimo')
         ax2.legend(loc='upper left')
 
-    # Ajusta os eixos
     for ax in [ax1, ax2]:
         ax.set_xticks(np.arange(largura))
         ax.set_yticks(np.arange(altura))
         ax.set_xticklabels(np.arange(largura))
         ax.set_yticklabels(np.arange(altura))
 
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+        ax.set_xticks(np.arange(largura) - 0.5, minor=True)
+        ax.set_yticks(np.arange(altura) - 0.5, minor=True)
+        ax.grid(which='minor', color='black', linestyle='-', linewidth=1)
+
+    patch_estrada = mpatches.Patch(color='#6BBE6B', label='Estrada (0.5)')
+    patch_terra = mpatches.Patch(color='#E3C18E', label='Terra (1.0)')
+    patch_lama = mpatches.Patch(color='#8B4513', label='Lama (5.0)')
+    patch_barreira = mpatches.Patch(color='#000000', label='Barreira (Inf)')
+    
+    fig.legend(handles=[patch_estrada, patch_terra, patch_lama, patch_barreira],
+               loc='lower center', ncol=4, bbox_to_anchor=(0.5, 0.01))
+
+    plt.tight_layout(rect=[0, 0.05, 1, 0.95])
     plt.show()
 
+inf = float('inf')
 
-# --- EXECUÇÃO DA BUSCA E VISUALIZAÇÃO ---
+print("Gerando novo tabuleiro aleatório...")
 
-# 1. Configuração inicial: gerar mapa aleatório a cada execução
-matriz_aleatoria = gerar_matriz_aleatoria(8,8)
-tabuleiro_teste = Tabuleiro(matriz_aleatoria)
+CUSTOS_TABULEIRO_ALEATORIO = gerar_matriz_aleatoria(largura=8, altura=8)
 
-# <<< MUDE A ORIGEM E O DESTINO >>>
-#índices válidos vão de 0 a 7 em um tabuleiro 8x8
-origem = tabuleiro_teste.get_casa(0, 0)   # Posições fixas conforme solicitado
-destino = tabuleiro_teste.get_casa(7, 7)
+origem_coords = (0, 0)  
+destino_coords = (7, 7) 
 
-# Segurança: se por algum motivo get_casa retornar None (coordenada inválida),
-# escolher posições padrão válidas
-if origem is None:
-    origem = tabuleiro_teste.get_casa(0, 0)
-if destino is None:
-    destino = tabuleiro_teste.get_casa(7, 7)
+print(f"Garantindo que origem {origem_coords} e destino {destino_coords} não são barreiras.")
+CUSTOS_TABULEIRO_ALEATORIO[origem_coords[1]][origem_coords[0]] = TERRAIN_VALUES['terra']
+CUSTOS_TABULEIRO_ALEATORIO[destino_coords[1]][destino_coords[0]] = TERRAIN_VALUES['terra']
 
-# Garantir que origem e destino não sejam barreiras (barreira -> tornar em 'terra')
-if origem.custo_terreno == float('inf'):
-    origem.custo_terreno = TERRAIN_VALUES['terra']
-if destino.custo_terreno == float('inf'):
-    destino.custo_terreno = TERRAIN_VALUES['terra']
+tabuleiro_teste = Tabuleiro(CUSTOS_TABULEIRO_ALEATORIO)
+origem = tabuleiro_teste.get_casa(origem_coords[0], origem_coords[1])
+destino = tabuleiro_teste.get_casa(destino_coords[0], destino_coords[1])
 
 buscaaestrela_cavalo = BuscaAEstrela(tabuleiro_teste, destino)
 
-# 2. Executar e Plotar com Heurística 1 (Fraca)
-# (O restante do código permanece o mesmo)
 print("--- Rodando com Heurística H1 (Fraca) ---")
 caminho_h1, custo_h1, closed_h1, g_map_h1 = buscaaestrela_cavalo.busca_a_estrela(
     origem, tipo_heuristica='h1'
@@ -120,7 +111,6 @@ else:
 
 print("\n" + "="*30 + "\n")
 
-# 3. Executar e Plotar com Heurística 2 (Forte)
 print("--- Rodando com Heurística H2 (Forte) ---")
 caminho_h2, custo_h2, closed_h2, g_map_h2 = buscaaestrela_cavalo.busca_a_estrela(
     origem, tipo_heuristica='h2'

@@ -1,54 +1,27 @@
-PRECISA APENAS INSTALAR O MATPLOTLIB E O NUMPY:
+NECESSÁRIO TER O PYTHON INSTALADO NA MÁQUINA!
+
+Com Python instalado na máquina, precisa apenas intalar o matplotlib e o numpy: 
 
 abre o terminal e:
 ```
 python -m pip install matplotlib numpy
+
 ```
-No terminal dentro da pasta dos dois arquivos:
- ```
-	python teste_cavalo.py
- ```
+No terminal dentro da pasta dos arquivos:
+
+Para visualizar de forma estática com mapa de calor.
 
  ```
-	python animador_cavalo.py
- ```
+	python visualizador_cavalo.py
 
  ```
-	python animador_comparativo.py
+Para visualizar apenas a heurística forte dinâmica:
+
  ```
+	python h2_dinamico.py
+ ```
+Para visualizar a comparação entre as heurística fraca e forte dinâmica:
 
-Instalação, configuração e execução (mínimo)
-
-Pré-requisito: Python 3.8+ instalado.
-
-1) Criar ambiente virtual e instalar dependências ( dentro da pasta do projeto):
-
-```powershell
-py -3.11 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
-
-2) Executar validação rápida (sem interface gráfica):
-
-```powershell
-.\.venv\Scripts\python.exe run_validate_direct.py
-```
-
-3) Executar visualização (interativa):
-
-```powershell
-.\.venv\Scripts\python.exe src\main.py
-```
-
-4) Executar em modo headless (salva imagem e métricas em `output/`):
-
-```powershell
-.\.venv\Scripts\python.exe src\main.py --headless
-```
-
-Arquivos úteis:
-- `src/astar.py` — implementação do A* e heurísticas.
-- `src/maps.py` — mapas de exemplo.
-- `src/main.py` — visualização (use `--headless` para salvar).
-- `run_validate_direct.py` — runner sem GUI para métricas.
+ ```
+	python comparativo_dinamico.py
+ ```
